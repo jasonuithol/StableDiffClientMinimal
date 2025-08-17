@@ -8,6 +8,7 @@ SOFTWARE REQUIREMENTS:
 
   - Python 3.11.x
   - possibly CUDA drivers.  Just get them to be safe.
+  - A full installation of Nvidia driver software that includes nvml.dll
   - CUDA aware torch libraries (version 12.1)
   - Not sure, but maybe you'll need to create a HuggingFace account and then get permission to access the Stable Diffusion repository (free).
 
