@@ -4,6 +4,7 @@ WHY ARE YOU HERE ?
 - CUDA 12.1 + PyTorch integration — pinned, tested, and documented so it runs where it’s supposed to, without dependency roulette.
 - Transparent architecture — every dependency justified, every path configurable, every large asset cached and tracked.
 - Only the bare essentials downloaded - automatically, and once.
+- 75% Vibe coded from only the purest vibes.
 
 HARDWARE REQUIREMENTS:
 
