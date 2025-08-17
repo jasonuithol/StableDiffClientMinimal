@@ -1,0 +1,24 @@
+# Core runtime
+torch==2.3.0+cu121           # Match your CUDA 12.1 build
+--extra-index-url https://download.pytorch.org/whl/cu121
+
+# Model/transformers stack
+transformers>=4.41.0
+diffusers>=0.29.0
+
+# Array/maths
+numpy>=1.26.0
+
+# Image handling
+Pillow>=10.0.0
+
+# HTTP fetch for file_access_logger
+requests>=2.31.0
+
+# GPU info
+nvidia-pyindex
+pynvml>=11.5.0
+
+# Optional: performance/compatibility helpers
+accelerate>=0.29.0
+safetensors>=0.4.0
