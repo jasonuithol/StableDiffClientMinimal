@@ -89,7 +89,7 @@ def generate_image(prompt, num_timesteps, random_seed, image_size):
     torch.cuda.synchronize()
     torch.cuda.empty_cache()
 
-    print("Freed memory after embedding prompt (allegedly)")
+    print("Freed memory after embedding prompt.")
 
     text_embeddings = text_embeddings.to(dtype=DTYPE) 
     print("Created text_embeddings")
@@ -161,7 +161,7 @@ def generate_image(prompt, num_timesteps, random_seed, image_size):
     
     torch.cuda.synchronize()
     torch.cuda.empty_cache()
-    print("Freed memory after denoising (allegedly)")
+    print("Freed memory after denoising.")
 
     # 🎨 Step 4: Decode Final Image
     r'''
