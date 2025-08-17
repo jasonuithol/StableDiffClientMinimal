@@ -154,7 +154,6 @@ def generate_image(prompt, num_timesteps, random_seed, image_size):
 
     print(f"Denoising completed. {min_free_vram_mb} MB of VRAM was left unused by loop.")
 
-    # Free up some .... memory, somewhere ?
     del unet
     del scheduler
     del timesteps
