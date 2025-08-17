@@ -23,7 +23,7 @@ INSTALLATION:
 
   - Ensure software requirements are met.
   - Either pull the repo, or manually download these files.
-  - Run this command: pip install -r requirements.txt
+  - Run this command: ```pip install -r requirements.txt```
 
 CONFIGURATION:
 
