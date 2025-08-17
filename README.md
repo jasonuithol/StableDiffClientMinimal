@@ -1,3 +1,10 @@
+WHY ARE YOU HERE ?
+
+- Minimal, GPU‑aware Stable Diffusion client — distilled to the essentials for lean, reproducible image generation with explicit VRAM control.
+- CUDA 12.1 + PyTorch integration — pinned, tested, and documented so it runs where it’s supposed to, without dependency roulette.
+- Transparent architecture — every dependency justified, every path configurable, every large asset cached and tracked.
+- Only the bare essentials downloaded - automatically, and once.
+
 HARDWARE REQUIREMENTS:
 
   - An NVidia GPU with probably 4GB of VRAM.
