@@ -55,17 +55,25 @@ def generate_image(prompt, num_timesteps, random_seed, image_size):
         print(f"⚠️ Estimated usage ({est_usage:.1f} MB) exceeds safe margin. Aborting.")
         exit()
 
-    LOCAL_MODELS_PATH = "../AI Models"
+    REPOSITORY_ROOT = "https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/resolve/main"
+    LOCAL_MODELS_PATH = "../AI Models/stable-diffusion-v1-5"
 
     # 🧩 Step 1: Text Encoding
+    r'''
+    stable-diffusion-v1-5\tokenizer\merges.txt
+    stable-diffusion-v1-5\tokenizer\tokenizer_config.json
+    '''
     tokenizer = CLIPTokenizer.from_pretrained(
-        f"{LOCAL_MODELS_PATH}/stable-diffusion-v1-5", 
+        f"{LOCAL_MODELS_PATH}", 
         subfolder="tokenizer"
     )
     print("Created tokenizer")
 
+    r'''
+    stable-diffusion-v1-5\text_encoder\config.json
+    '''
     text_encoder = CLIPTextModel.from_pretrained(
-        f"{LOCAL_MODELS_PATH}/stable-diffusion-v1-5", 
+        f"{LOCAL_MODELS_PATH}", 
         subfolder="text_encoder"
     ).to(device="cuda", dtype=DTYPE)
     print("Created text_encoder")
@@ -93,8 +101,12 @@ def generate_image(prompt, num_timesteps, random_seed, image_size):
     latent = torch.randn([1, 4, latent_h, latent_w], dtype=DTYPE, device="cuda")
 
     # 🔁 Step 3: Denoising Loop with Cross-Attention
+    r'''
+    stable-diffusion-v1-5\unet\config.json
+    stable-diffusion-v1-5\unet\diffusion_pytorch_model.safetensors
+    '''
     unet = UNet2DConditionModel.from_pretrained(
-        f"{LOCAL_MODELS_PATH}/stable-diffusion-v1-5/unet",  # local path
+        f"{LOCAL_MODELS_PATH}/unet",  # local path
         torch_dtype=DTYPE
     ).to("cuda")
 
@@ -108,8 +120,11 @@ def generate_image(prompt, num_timesteps, random_seed, image_size):
 
 
     # Scheduler setup
+    r'''
+    stable-diffusion-v1-5\scheduler\scheduler_config.json
+    '''
     scheduler = DDIMScheduler.from_pretrained(
-        f"{LOCAL_MODELS_PATH}/stable-diffusion-v1-5/scheduler",  # local path
+        f"{LOCAL_MODELS_PATH}/scheduler",  # local path
         subfolder=None
     )
     scheduler.set_timesteps(num_timesteps)
@@ -150,9 +165,12 @@ def generate_image(prompt, num_timesteps, random_seed, image_size):
     print("Freed memory after denoising (allegedly)")
 
     # 🎨 Step 4: Decode Final Image
-
+    r'''
+    stable-diffusion-v1-5\vae\config.json
+    stable-diffusion-v1-5\vae\diffusion_pytorch_model.safetensors    
+    '''
     vae = AutoencoderKL.from_pretrained(
-        f"{LOCAL_MODELS_PATH}/stable-diffusion-v1-5", 
+        f"{LOCAL_MODELS_PATH}",
         subfolder="vae"
     )
     vae = vae.to(dtype=torch.float32, device="cpu")
