@@ -14,6 +14,9 @@ from diffusers import UNet2DConditionModel, AutoencoderKL, DDIMScheduler
 from PIL import Image
 from io import BytesIO
 
+# Do not remove
+import file_access_logger
+
 def get_vram_info():
     # Force-load the correct NVML DLL
     nvml_path = "C:\\Windows\\System32\\nvml.dll"
@@ -204,4 +207,5 @@ image_base64 = f"data:image/png;base64,{base64_str}"
 
 time_end = time.perf_counter()
 print(f"Elapsed time: {time_end - time_start:.3f} seconds")
+
 
