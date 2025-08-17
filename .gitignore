@@ -1,0 +1,6 @@
+.cache/
+
+*.png
+*.safetensors
+*.bin
+*.zip
