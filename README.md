@@ -10,7 +10,7 @@ SOFTWARE REQUIREMENTS:
   - possibly CUDA drivers.  Just get them to be safe.
   - A full installation of Nvidia driver software that includes nvml.dll
   - CUDA aware torch libraries (version 12.1)
-  - Not sure, but maybe you'll need to create a HuggingFace account and then get permission to access the Stable Diffusion repository (free).
+  - Not sure, but maybe you'll need to create a HuggingFace account and then get permission to access the Stable Diffusion 1.5 repository (free).
 
 INSTALLATION:
 
@@ -30,8 +30,7 @@ Running "python image.py" is sufficient.
 
 NOTES:
 
-Currently expects all pip installs to be already run, my apologies.
-Also expects a folder at the same level as the parent folder called "AI Models" to exist.
+Expects a folder at the same level as the parent folder called "AI Models" to exist.  You can edit this path - check the images.py and file_access_logger.py files for a variable called LOCAL_MODELS_PATH and change to suit your needs if required.
 
 On the first go, will download about 5GB of files.
 
