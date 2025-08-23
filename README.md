@@ -15,16 +15,15 @@ HARDWARE REQUIREMENTS:
 SOFTWARE REQUIREMENTS: 
 
   - Python 3.11.x
-  - possibly CUDA drivers.  Just get them to be safe.
+  - possibly CUDA drivers.  Just get them to be safe.  Minimum required version is 12.1
   - A full installation of Nvidia driver software that includes nvml.dll
-  - CUDA aware torch libraries (version 12.1)
   - Not sure, but maybe you'll need to create a HuggingFace account and then get permission to access the Stable Diffusion 1.5 repository (free).
 
 INSTALLATION:
 
   - Ensure software requirements are met.
   - Either pull the repo, or manually download these files.
-  - Run this command: pip install -r requirements.txt
+  - Run this command: ```pip install -r requirements.txt```
 
 CONFIGURATION:
 
