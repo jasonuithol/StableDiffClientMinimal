@@ -12,6 +12,12 @@ FLUX_DEV = {
     "REPOSITORY_ROOT": "https://huggingface.co/black-forest-labs/FLUX.1-dev"
 }
 
+FLUX_SCHNELL = {
+    "MODEL_PATH": f"{LOCAL_MODELS_PATH}/black-forest-labs_FLUX.1-schnell",
+    "REPOSITORY_ROOT": "https://huggingface.co/black-forest-labs/FLUX.1-schnell"
+}
+
+
 def get_model_config(key: str) -> Dict[str, str]:
     cfg = globals()[key]
     return {**cfg, "LOCAL_MODELS_PATH": LOCAL_MODELS_PATH}

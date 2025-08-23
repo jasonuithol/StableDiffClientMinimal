@@ -51,7 +51,7 @@ def generate_image(prompt, num_timesteps, random_seed, image_size):
 
     image_pil = pipe(
         prompt=prompt,
-        num_inference_steps=3, #num_timesteps,
+        num_inference_steps=num_timesteps,
         generator=g,
         width=width, 
         height=height,
