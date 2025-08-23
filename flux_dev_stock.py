@@ -1,6 +1,12 @@
 # file: flux_dev_stock.py
-import os, torch, random
+import os, torch, time
 from diffusers import FluxPipeline, FlowMatchEulerDiscreteScheduler
+
+from constants import get_model_config
+
+# Do not remove
+MODEL_KEY = "FLUX_DEV"
+MODEL_PATH = get_model_config(MODEL_KEY)["MODEL_PATH"]
 
 # allocator knobs
 if os.name == "nt":
@@ -17,8 +23,6 @@ try:
 except Exception:
     pass
 
-MODEL_PATH = r"..\AI Models\black-forest-labs_FLUX.1-dev"  # or your local path
-
 dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 pipe = FluxPipeline.from_pretrained(MODEL_PATH, torch_dtype=dtype)
 
@@ -34,12 +38,42 @@ pipe.vae.enable_slicing()
 pipe.transformer.to(memory_format=torch.channels_last)
 pipe.vae.to(memory_format=torch.channels_last)
 
-g = torch.Generator(device="cpu").manual_seed(42)
-image = pipe(
-    prompt="a glowing jellyfish in deep ocean",
-    num_inference_steps=24,
-    generator=g,
-    width=768, height=768,
-).images[0]
+def generate_image(prompt, num_timesteps, random_seed, image_size):
 
-image.save("flux_stock.png")
+    if image_size is None:
+        image_size = (768,768)
+
+    width, height = image_size
+
+    # TODO: Assert dimensions are correct i.e. mod 16 or something == 0
+
+    g = torch.Generator(device="cpu").manual_seed(random_seed)
+
+    image_pil = pipe(
+        prompt=prompt,
+        num_inference_steps=3, #num_timesteps,
+        generator=g,
+        width=width, 
+        height=height,
+    ).images[0]
+
+    return image_pil
+
+#
+# MAIN 
+#
+if __name__ == "__main__":
+
+    time_start = time.perf_counter()  # High‑resolution timer
+
+    image_pil = generate_image(
+        prompt="a glowing jellyfish in deep ocean",
+        num_timesteps=28, 
+        random_seed=42,
+        image_size=(512,512)
+    )
+
+    image_pil.show()
+
+    time_end = time.perf_counter()
+    print(f"Elapsed time: {time_end - time_start:.3f} seconds")
