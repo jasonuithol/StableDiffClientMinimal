@@ -3,8 +3,6 @@ os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
 
 import time
 import torch
-import torch.nn as nn
-import numpy as np
 import base64
 import pynvml
 import ctypes
@@ -13,9 +11,15 @@ from transformers import CLIPTokenizer, CLIPTextModel
 from diffusers import UNet2DConditionModel, AutoencoderKL, DDIMScheduler
 from PIL import Image
 from io import BytesIO
+from typing import Tuple
+from constants import get_model_config
+from model_asset_handler import model_asset_handler
 
 # Do not remove
-import file_access_logger
+MODEL_KEY = "STABLE_DIFFUSION"
+MODEL_PATH = get_model_config(MODEL_KEY)["MODEL_PATH"]
+model_asset_handler(MODEL_KEY)
+
 
 def get_vram_info():
     # Force-load the correct NVML DLL
@@ -55,16 +59,13 @@ def generate_image(prompt, num_timesteps, random_seed, image_size):
         print(f"⚠️ Estimated usage ({est_usage:.1f} MB) exceeds safe margin. Aborting.")
         exit()
 
-    REPOSITORY_ROOT = "https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/resolve/main"
-    LOCAL_MODELS_PATH = "../AI Models/stable-diffusion-v1-5"
-
     # 🧩 Step 1: Text Encoding
     r'''
     stable-diffusion-v1-5\tokenizer\merges.txt
     stable-diffusion-v1-5\tokenizer\tokenizer_config.json
     '''
     tokenizer = CLIPTokenizer.from_pretrained(
-        f"{LOCAL_MODELS_PATH}", 
+        f"{MODEL_PATH}", 
         subfolder="tokenizer"
     )
     print("Created tokenizer")
@@ -73,7 +74,7 @@ def generate_image(prompt, num_timesteps, random_seed, image_size):
     stable-diffusion-v1-5\text_encoder\config.json
     '''
     text_encoder = CLIPTextModel.from_pretrained(
-        f"{LOCAL_MODELS_PATH}", 
+        f"{MODEL_PATH}", 
         subfolder="text_encoder"
     ).to(device="cuda", dtype=DTYPE)
     print("Created text_encoder")
@@ -106,7 +107,7 @@ def generate_image(prompt, num_timesteps, random_seed, image_size):
     stable-diffusion-v1-5\unet\diffusion_pytorch_model.safetensors
     '''
     unet = UNet2DConditionModel.from_pretrained(
-        f"{LOCAL_MODELS_PATH}/unet",  # local path
+        f"{MODEL_PATH}/unet",  # local path
         torch_dtype=DTYPE
     ).to("cuda")
 
@@ -124,7 +125,7 @@ def generate_image(prompt, num_timesteps, random_seed, image_size):
     stable-diffusion-v1-5\scheduler\scheduler_config.json
     '''
     scheduler = DDIMScheduler.from_pretrained(
-        f"{LOCAL_MODELS_PATH}/scheduler",  # local path
+        f"{MODEL_PATH}/scheduler",  # local path
         subfolder=None
     )
     scheduler.set_timesteps(num_timesteps)
@@ -169,7 +170,7 @@ def generate_image(prompt, num_timesteps, random_seed, image_size):
     stable-diffusion-v1-5\vae\diffusion_pytorch_model.safetensors    
     '''
     vae = AutoencoderKL.from_pretrained(
-        f"{LOCAL_MODELS_PATH}",
+        f"{MODEL_PATH}",
         subfolder="vae"
     )
     vae = vae.to(dtype=torch.float32, device="cpu")
@@ -191,38 +192,36 @@ def generate_image(prompt, num_timesteps, random_seed, image_size):
     image_tensor = (image_tensor / 2 + 0.5).clamp(0, 1)
     image_tensor = image_tensor.cpu().permute(0, 2, 3, 1).numpy()  # [1, H, W, C]
 
-    image_np = (image_tensor[0] * 255).round().astype("uint8")  # [H, W, C]
+    image_numpy = (image_tensor[0] * 255).round().astype("uint8")  # [H, W, C]
     del image_tensor
 
-    decoded_image = Image.fromarray(image_np)
-    del image_np
+    image_pil = Image.fromarray(image_numpy)
+    del image_numpy
 
     print("Decoded final image")
-    return decoded_image
+    return image_pil
 
 #
 # MAIN 
 #
+if __name__ == "__main__":
 
-time_start = time.perf_counter()  # High‑resolution timer
+    time_start = time.perf_counter()  # High‑resolution timer
 
-image_pil = generate_image(
-    prompt="a glowing jellyfish in deep ocean",
-    num_timesteps=28, 
-    random_seed=42,
-    image_size=(512,512)
-)
 
-image_pil.show()
+    image_pil = generate_image(
+        prompt="a glowing jellyfish in deep ocean",
+        num_timesteps=28, 
+        random_seed=42,
+        image_size=(512,512)
+    )
 
-buffer = BytesIO()
-image_pil.save(buffer, format="PNG")
-base64_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-image_base64 = f"data:image/png;base64,{base64_str}"
+    buffer = BytesIO()
+    image_pil.save(buffer, format="PNG")
 
-#print(image_base64)
+    image_pil.show()
 
-time_end = time.perf_counter()
-print(f"Elapsed time: {time_end - time_start:.3f} seconds")
+    time_end = time.perf_counter()
+    print(f"Elapsed time: {time_end - time_start:.3f} seconds")
 
 
