@@ -64,8 +64,6 @@ if __name__ == "__main__":
 
     image_pil = generate_image(
         prompt="You have entered a dark crypt made of crumbling stone.  Distant echoes of collapsing piles of rubble and bones disturb the otherwise deathly silence.  Strange diagrams and ancient runes decorate the odd stone.",
-        num_timesteps=3, 
-        random_seed=394856783745,
         image_size=(384,384)
     )
 

@@ -7,11 +7,12 @@ from constants import get_model_config
 def model_asset_handler(model_key: str):
 
     model_config = get_model_config(model_key)
-    LOCAL_MODELS_PATH = model_config["LOCAL_MODELS_PATH"]
+    MODEL_PATH = model_config["MODEL_PATH"]    
+#    LOCAL_MODELS_PATH = model_config["LOCAL_MODELS_PATH"]
     REPOSITORY_ROOT = model_config["REPOSITORY_ROOT"]
 
     # === CONFIG ===
-    MANIFEST_PATH = os.path.join(LOCAL_MODELS_PATH, "_manifest.txt")
+    MANIFEST_PATH = os.path.join(MODEL_PATH, "_manifest.txt")
 
     # Keep originals
     _real_open    = builtins.open
@@ -26,10 +27,10 @@ def model_asset_handler(model_key: str):
     # === UTILS ===
     def _should_fetch(path: str) -> bool:
         # Only intercept under LOCAL_MODELS_PATH
-        return LOCAL_MODELS_PATH.lower() in os.path.abspath(path).lower()
+        return MODEL_PATH.lower() in os.path.abspath(path).lower()
 
     def _derive_rel_path(abs_path: str) -> str:
-        return os.path.relpath(abs_path, LOCAL_MODELS_PATH).replace("\\", "/")
+        return os.path.relpath(abs_path, MODEL_PATH).replace("\\", "/")
 
     # === BLOCKING FETCH (for exists/isfile) ===
     def _fetch_and_cache_blocking(rel_path: str) -> str | None:
@@ -37,13 +38,13 @@ def model_asset_handler(model_key: str):
             # Known ghost, skip fetch entirely
             return None
 
-        local_path = os.path.join(LOCAL_MODELS_PATH, rel_path).replace("\\", "/")
+        local_path = os.path.join(MODEL_PATH, rel_path).replace("\\", "/")
         if _real_exists(local_path):
             return local_path
 
         with _fetch_lock:
             if not _real_exists(local_path):
-                rel_path_for_url = rel_path
+                rel_path_for_url = rel_path.replace("\\", "/")
                 url = f"{REPOSITORY_ROOT}/{rel_path_for_url}"
                 print(f"[file_access_logger] Downloading {url} → {local_path}")
 

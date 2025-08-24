@@ -207,8 +207,6 @@ if __name__ == "__main__":
 
     image_pil = generate_image(
         prompt="a glowing jellyfish in deep ocean",
-        num_timesteps=28, 
-        random_seed=42,
         image_size=(512,512)
     )
 
