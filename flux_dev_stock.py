@@ -70,7 +70,7 @@ if __name__ == "__main__":
     time_start = time.perf_counter()  # High‑resolution timer
 
     image_pil = generate_image(
-        prompt="a glowing jellyfish in deep ocean"
+        prompt="a glowing jellyfish in deep ocean",
         image_size=(512,512)
     )
 
