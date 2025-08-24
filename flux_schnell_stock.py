@@ -1,25 +1,20 @@
 # file: flux_schnell_stock.py
-import os, torch, time
-from diffusers import FluxSchnellPipeline, FlowMatchEulerDiscreteScheduler
 
-from constants import get_model_config
+import time, os, torch
+from diffusers import FluxPipeline
+from diffusers.hooks import apply_group_offloading
 
-# -------------------------------------------------------------------------
-# MODEL CONFIG
-# -------------------------------------------------------------------------
-MODEL_KEY = "FLUX_SCHNELL"
-MODEL_PATH = get_model_config(MODEL_KEY)["MODEL_PATH"]
+print("Is cuda available: ", torch.cuda.is_available())
+print("CUDA device name: ", torch.cuda.get_device_name(0))
 
-# -------------------------------------------------------------------------
-# CUDA allocator knobs (Windows-safe)
-# -------------------------------------------------------------------------
+# allocator knobs
 if os.name == "nt":
     os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "max_split_size_mb:64")
 else:
     os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True,max_split_size_mb:64")
 
 torch.backends.cuda.matmul.allow_tf32 = True
-torch.set_float32_matmul_precision("high")
+torch.set_float32_matmul_precision("medium")
 try:
     torch.backends.cuda.enable_flash_sdp(True)
     torch.backends.cuda.enable_mem_efficient_sdp(True)
@@ -27,65 +22,49 @@ try:
 except Exception:
     pass
 
-# -------------------------------------------------------------------------
-# PIPELINE INIT
-# -------------------------------------------------------------------------
-dtype = torch.float16 if torch.cuda.is_available() else torch.float32
-pipe = FluxSchnellPipeline.from_pretrained(MODEL_PATH, torch_dtype=dtype)
-
-# Use recommended scheduler
-pipe.scheduler = FlowMatchEulerDiscreteScheduler.from_config(pipe.scheduler.config)
-
-# -------------------------------------------------------------------------
-# MEMORY-SAFE SETTINGS
-# -------------------------------------------------------------------------
-pipe.enable_attention_slicing()
+pipe = FluxPipeline.from_pretrained(
+    "black-forest-labs/FLUX.1-schnell", 
+    torch_dtype=torch.bfloat16
+)
+# offload everything except the hot path; VAE tiling to keep memory sane
 pipe.enable_model_cpu_offload()
 pipe.vae.enable_tiling()
 pipe.vae.enable_slicing()
-pipe.transformer.to(memory_format=torch.channels_last)
-pipe.vae.to(memory_format=torch.channels_last)
+pipe.enable_attention_slicing()
 
-# -------------------------------------------------------------------------
-# OPTIONAL: VRAM logging helper
-# -------------------------------------------------------------------------
-def log_vram(stage):
-    if torch.cuda.is_available():
-        print(f"[VRAM] {stage}: {torch.cuda.memory_allocated()/1024**2:.2f} MB "
-              f"(peak {torch.cuda.max_memory_allocated()/1024**2:.2f} MB)")
+pipe.to(torch.float16) # casting here instead of in the pipeline constructor because doing so in the constructor loads all models into CPU memory at once
 
-# -------------------------------------------------------------------------
-# IMAGE GENERATION
-# -------------------------------------------------------------------------
-def generate_image(prompt, num_timesteps=4, random_seed=42, image_size=(512, 512)):
+def generate_image(prompt, num_timesteps, random_seed, image_size):
+
+    if image_size is None:
+        image_size = (256,256)
+
     width, height = image_size
-    assert width % 8 == 0 and height % 8 == 0, "Image dimensions must be divisible by 8"
 
-    g = torch.Generator(device="cpu").manual_seed(random_seed)
-
-    log_vram("before inference")
     image_pil = pipe(
-        prompt=prompt,
-        num_inference_steps=num_timesteps,
-        generator=g,
-        width=width,
+        prompt,
+        guidance_scale=0.0,
         height=height,
+        width=width,
+        num_inference_steps=num_timesteps,
+        max_sequence_length=256
+    #    generator=torch.Generator(device="cuda").manual_seed(random_seed)
     ).images[0]
-    log_vram("after inference")
 
     return image_pil
 
-# -------------------------------------------------------------------------
-# MAIN
-# -------------------------------------------------------------------------
+#
+# MAIN 
+#
 if __name__ == "__main__":
-    time_start = time.perf_counter()
+
+    time_start = time.perf_counter()  # High‑resolution timer
 
     image_pil = generate_image(
-        prompt="a glowing jellyfish in deep ocean",
-        num_timesteps=4,
-        random_seed=42,
-        image_size=(512, 512)
+        prompt="Five german sausages (wearing german clothes, and not anthropomorphic !) wriggling south for the winter over a wetlands at midday.",
+        num_timesteps=3, 
+        random_seed=394856783745,
+        image_size=(384,384)
     )
 
     image_pil.show()
