@@ -1,8 +1,7 @@
 # file: flux_schnell_stock.py
 
-import time, os, torch
+import time, os, torch, random
 from diffusers import FluxPipeline
-from diffusers.hooks import apply_group_offloading
 
 print("Is cuda available: ", torch.cuda.is_available())
 print("CUDA device name: ", torch.cuda.get_device_name(0))
@@ -34,7 +33,10 @@ pipe.enable_attention_slicing()
 
 pipe.to(torch.float16) # casting here instead of in the pipeline constructor because doing so in the constructor loads all models into CPU memory at once
 
-def generate_image(prompt, num_timesteps, random_seed, image_size):
+def generate_image(prompt, image_size):
+
+    num_timesteps = 3
+    random_seed = random.randint(0, 2**32 - 1)  # 32-bit unsigned int range
 
     if image_size is None:
         image_size = (256,256)
@@ -61,7 +63,7 @@ if __name__ == "__main__":
     time_start = time.perf_counter()  # High‑resolution timer
 
     image_pil = generate_image(
-        prompt="Five german sausages (wearing german clothes, and not anthropomorphic !) wriggling south for the winter over a wetlands at midday.",
+        prompt="You have entered a dark crypt made of crumbling stone.  Distant echoes of collapsing piles of rubble and bones disturb the otherwise deathly silence.  Strange diagrams and ancient runes decorate the odd stone.",
         num_timesteps=3, 
         random_seed=394856783745,
         image_size=(384,384)

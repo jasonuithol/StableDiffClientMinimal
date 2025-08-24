@@ -1,17 +1,11 @@
 import os
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
 
-import time
-import torch
-import base64
-import pynvml
-import ctypes
+import time, torch, pynvml, ctypes, random
 
 from transformers import CLIPTokenizer, CLIPTextModel
 from diffusers import UNet2DConditionModel, AutoencoderKL, DDIMScheduler
 from PIL import Image
-from io import BytesIO
-from typing import Tuple
 from constants import get_model_config
 from model_asset_handler import model_asset_handler
 
@@ -39,7 +33,10 @@ def get_vram_info():
     return {"total": total, "used": used, "free": free}
 
 @torch.inference_mode()  # safer, leaner than manual no_grad blocks everywhere
-def generate_image(prompt, num_timesteps, random_seed, image_size):
+def generate_image(prompt, image_size):
+
+    num_timesteps = 28 
+    random_seed = random.randint(0, 2**32 - 1)  # 32-bit unsigned int range
 
     DTYPE = torch.float16
     SAFE_MARGIN_MB = 70  # adjust based on your tolerance

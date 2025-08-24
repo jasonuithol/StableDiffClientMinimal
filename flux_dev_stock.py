@@ -1,5 +1,5 @@
 # file: flux_dev_stock.py
-import os, torch, time
+import os, torch, time, random
 from diffusers import FluxPipeline, FlowMatchEulerDiscreteScheduler
 
 from constants import get_model_config
@@ -38,7 +38,10 @@ pipe.vae.enable_slicing()
 pipe.transformer.to(memory_format=torch.channels_last)
 pipe.vae.to(memory_format=torch.channels_last)
 
-def generate_image(prompt, num_timesteps, random_seed, image_size):
+def generate_image(prompt, image_size):
+
+    num_timesteps = 28
+    random_seed = random.randint(0, 2**32 - 1)  # 32-bit unsigned int range
 
     if image_size is None:
         image_size = (768,768)
